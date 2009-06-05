@@ -34,7 +34,7 @@ end
   private
   def retrieve_db_info
     result = File.read "#{RAILS_ROOT}/config/database.yml"
-    result.strip!
+    # result.strip!
     config_file = YAML::load(ERB.new(result).result)
     return [
       config_file[RAILS_ENV]['database'],
