@@ -19,7 +19,7 @@ namespace :db do
       Rake::Task['db:create'].invoke
 
       archive = "#{RAILS_ROOT}/db/dump.sql.bz2"
-      database, user, password = retrieve_db_info
+      database, user, password, host = retrieve_db_info
       cmd = "bunzip2 < #{archive} | "
       cmd += "/usr/bin/env mysql -h #{host} -u #{user} #{database}"
       puts cmd + "... [password filtered]"
