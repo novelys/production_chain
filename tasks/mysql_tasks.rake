@@ -4,9 +4,9 @@ namespace :db do
     task :backup => :environment do
       current_date = Time.now.strftime("%Y_%m_%d")
       archive = "#{RAILS_ROOT}/db/dump.sql.bz2"
-      database, user, password = retrieve_db_info
+      database, user, password, host = retrieve_db_info
     
-      cmd = "/usr/bin/env mysqldump --opt --skip-add-locks -u#{user} "
+      cmd = "/usr/bin/env mysqldump --opt --skip-add-locks -h #{host} -u #{user} "
       puts cmd + "... [password filtered]"
       cmd += " -p'#{password}' " unless password.nil?
       cmd += " #{database} | bzip2 -c > #{archive}"
@@ -21,7 +21,7 @@ namespace :db do
       archive = "#{RAILS_ROOT}/db/dump.sql.bz2"
       database, user, password = retrieve_db_info
       cmd = "bunzip2 < #{archive} | "
-      cmd += "/usr/bin/env mysql -u #{user} #{database}"
+      cmd += "/usr/bin/env mysql -h #{host} -u #{user} #{database}"
       puts cmd + "... [password filtered]"
       cmd += " -p'#{password}'" unless password.nil?
       system(cmd)
@@ -39,10 +39,11 @@ end
     return [
       config_file[RAILS_ENV]['database'],
       config_file[RAILS_ENV]['username'],
-      config_file[RAILS_ENV]['password']
+      config_file[RAILS_ENV]['password'],
+      config_file[RAILS_ENV]['host'] || "127.0.0.1"
     ]
   end
   
-  def mysql_execute(username, password, sql)
-    system("/usr/bin/env mysql -u #{username} -p'#{password}' --execute=\"#{sql}\"")
+  def mysql_execute(username, password, sql, host = "127.0.0.1")
+    system("/usr/bin/env mysql -h #{host} -u #{username} -p'#{password}' --execute=\"#{sql}\"")
   end
