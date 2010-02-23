@@ -10,6 +10,7 @@ namespace :db do
     Rake::Task['db:drop'].invoke
     Rake::Task['db:create'].invoke
     adapter, database, user, password, host = retrieve_db_info
+    send("restore_#{adapter}_database", database, user, password, host)
     Rake::Task['db:migrate'].invoke
   end
 end
