@@ -11,7 +11,7 @@ namespace :db do
     Rake::Task['db:create'].invoke
     adapter, database, user, password, host = retrieve_db_info
     send("restore_#{adapter}_database", database, user, password, host)
-    Rake::Task['db:migrate'].invoke
+    Rake::Task['db:migrate'].invoke unless adapter == "mongodb"
   end
 end
 
@@ -31,22 +31,23 @@ private
   end
   
   def archive_name
-    archive = "#{Rails.root}/db/dump.sql.bz2"
+    archive = "#{Rails.root}/db/dump.tar.gz"
   end
-  
+
   def backup_mysql_database database, user, password, host
     cmd = "/usr/bin/env mysqldump --opt --skip-add-locks -h #{host} -u #{user} "
     puts cmd + "... [password filtered]"
     cmd += " -p'#{password}' " unless password.nil?
-    cmd += " #{database} | bzip2 -c > #{archive_name}"
+    cmd += " #{database} > dump.sql && tar czfh #{archive_name} dump.sql"
     system(cmd)
   end
 
   def restore_mysql_database database, user, password, host
-    cmd = "bunzip2 < #{archive_name} | "
+    cmd = "tar xvzf #{archive_name} && "
     cmd += "/usr/bin/env mysql -h #{host} -u #{user} #{database}"
     puts cmd + "... [password filtered]"
     cmd += " -p'#{password}'" unless password.nil?
+    cmd += " < dump.sql"
     system(cmd)
   end
 
@@ -54,15 +55,27 @@ private
     cmd = "/usr/bin/env pg_dump -h #{host} -U #{user} "
     # puts cmd + "... [password filtered]"
     #cmd += " < '#{password}' " unless password.nil?
-    cmd += " #{database} | bzip2 -c > #{archive_name}"
+    cmd += " #{database} > dump.sql && tar czfh #{archive_name} dump.sql"
     system(cmd)
   end
 
   def restore_postgresql_database database, user, password, host
-    cmd = "bunzip2 < #{archive_name} | "
-    cmd += "/usr/bin/env pg_restore -h #{host} -U #{user} #{database}"
+    cmd = "tar xvzf #{archive_name} && "
+    cmd += "/usr/bin/env pg_restore -h #{host} -U #{user} #{database} < dump.sql"
     # puts cmd + "... [password filtered]"
     # cmd += " < '#{password}'" unless password.nil?
+    system(cmd)
+  end
+
+  def backup_mongodb_database database, user, password, host
+    cmd = "rm -rf dump/ 2>/dev/null && /opt/mongodb/bin/mongodump -h #{host} -d #{database}"
+    cmd += " && tar czfh #{archive_name} dump/"
+    system(cmd)
+  end
+
+  def restore_mongodb_database database, user, password, host
+    cmd = "rm -rf dump/ 2>/dev/null && tar xvzf #{archive_name}"
+    cmd += " && sudo /opt/mongodb/bin/mongorestore -h #{host} --dbpath dump/"
     system(cmd)
   end
 
