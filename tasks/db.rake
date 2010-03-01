@@ -75,7 +75,8 @@ private
 
   def restore_mongodb_database database, user, password, host
     cmd = "rm -rf dump/ 2>/dev/null && tar xvzf #{archive_name}"
-    cmd += " && sudo /opt/mongodb/bin/mongorestore -h #{host} --dbpath dump/"
+    cmd += " && sudo /opt/mongodb/bin/mongorestore -h #{host} -d #{database} --dir dump/*_*"
+    print cmd
     system(cmd)
   end
 
