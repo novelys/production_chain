@@ -4,9 +4,10 @@ namespace :db do
   task :dump_and_restore, :roles => :db, :only => {:primary => true} do
     rake = fetch(:rake, "rake")
     rails_env = fetch(:rails_env, "production")
-    run "cd #{current_release} && RAILS_ENV=#{rails_env} #{rake} db:backup"
+    file_env = ENV['FILE'] || "database"
+    run "cd #{current_release} && RAILS_ENV=#{rails_env} FILE=#{file_env} #{rake} db:backup"
     get "#{current_release}/db/dump.tar.gz", "db/dump.tar.gz"
-    cmd = "rake RAILS_ENV=#{ ENV['RAILS_ENV'] || "development" } db:restore"
+    cmd = "rake RAILS_ENV=#{ ENV['RAILS_ENV'] || "development" } FILE=#{file_env} db:restore"
     puts cmd
     system cmd
   end
