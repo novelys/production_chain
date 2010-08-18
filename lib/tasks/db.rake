@@ -11,9 +11,10 @@ namespace :db do
     if type == "mongodb"
       send("restore_#{type}_database", database, user, password, host)
     else
-      db_drop_mysql database, user, password, host
-      db_create_mysql database, user, password, host
+      send("drop_#{type}_database", database, user, password, host)
+      send("create_#{type}_database", database, user, password, host)
       send("restore_#{type}_database", database, user, password, host)
+      
       Rake::Task['db:migrate'].invoke
     end
   end
@@ -43,62 +44,88 @@ private
   def backup_mysql_database database, user, password, host
     cmd = "/usr/bin/env mysqldump --opt --skip-add-locks -h #{host} -u #{user} "
     puts cmd + "... [password filtered]"
-    cmd += " -p'#{password}' " unless password.nil?
-    cmd += " #{database} > dump.sql && tar czfh #{archive_name} dump.sql"
+    cmd << " -p'#{password}' " unless password.nil?
+    cmd << " #{database} > dump.sql && tar czfh #{archive_name} dump.sql"
+    
     system(cmd)
   end
 
   def restore_mysql_database database, user, password, host
     cmd = "tar xvzf #{archive_name} && "
-    cmd += "/usr/bin/env mysql -h #{host} -u #{user} #{database}"
+    cmd << "/usr/bin/env mysql -h #{host} -u #{user} #{database}"
     puts cmd + "... [password filtered]"
-    cmd += " -p'#{password}'" unless password.nil?
-    cmd += " < dump.sql"
+    cmd << " -p'#{password}'" unless password.nil?
+    cmd << " < dump.sql"
+    
     system(cmd)
   end
-
+  
+  # pg_dump does not allow to pass the password in the command line for security reasons.
+  # You need to define the password for your user in ~/.pgpass
+  # See : http://www.postgresql.org/docs/8.1/interactive/libpq-pgpass.html
+  #
+  # pg_dump -Fc option outputs a custom dump file which is compressed by default.
+  # See man pg_dump for more information.
+  #
   def backup_postgresql_database database, user, password, host
-    cmd = "/usr/bin/env pg_dump -h #{host} -U #{user} "
-    # puts cmd + "... [password filtered]"
-    #cmd += " < '#{password}' " unless password.nil?
-    cmd += " #{database} > dump.sql && tar czfh #{archive_name} dump.sql"
+    cmd = "/usr/bin/env pg_dump -Fc -h #{host} -U #{user} #{database} -f db.dump"
+    cmd << " && tar czfh #{archive_name} db.dump"
+    puts cmd
+    
     system(cmd)
   end
 
   def restore_postgresql_database database, user, password, host
-    cmd = "tar xvzf #{archive_name} && "
-    cmd += "/usr/bin/env pg_restore -h #{host} -U #{user} #{database} < dump.sql"
-    # puts cmd + "... [password filtered]"
-    # cmd += " < '#{password}'" unless password.nil?
+    cmd = "tar xvzf #{archive_name}"
+    cmd << " && /usr/bin/env pg_restore -h #{host} -U #{user} -O -d #{database} db.dump"
+    puts cmd
+    
     system(cmd)
   end
 
   def backup_mongodb_database database, user, password, host
     cmd = "rm -rf dump/ 2>/dev/null && /usr/bin/env mongodump -h #{host} -d #{database}"
-    cmd += " && tar czfh #{archive_name} dump/"
+    cmd << " && tar czfh #{archive_name} dump/"
+    
     system(cmd)
   end
 
   def restore_mongodb_database database, user, password, host
     cmd = "rm -rf dump/ 2>/dev/null && tar xvzf #{archive_name}"
     cmd += " && /usr/bin/env mongorestore -h #{host} -d #{database} --dir dump/*_*"
-    print cmd
+    puts cmd
+    
     system(cmd)
   end
 
-  def db_drop_mysql database, user, password, host
+  def drop_mysql_database database, user, password, host
     cmd = "/usr/bin/env mysql -h #{host} -u #{user}"
-    cmd += " -e \"DROP DATABASE #{database}\""
+    cmd << " -e \"DROP DATABASE #{database}\""
     puts cmd + "... [password filtered]"
-    cmd += " -p'#{password}'" unless password.nil?
+    cmd << " -p'#{password}'" unless password.nil?
+    
+    system(cmd)
+  end
+  
+  # We cannot use dropdb command as the rake task seems to lock the database...
+  #
+  def drop_postgresql_database database, user, password, host
+    Rake::Task['db:drop'].invoke
+  end
+  
+  def create_postgresql_database database, user, password, host
+    cmd = "/usr/bin/env createdb -h #{host} -U #{user} #{database}"
+    puts cmd
+    
     system(cmd)
   end
 
-  def db_create_mysql database, user, password, host
+  def create_mysql_database database, user, password, host
     cmd = "/usr/bin/env mysql -h #{host} -u #{user}"
-    cmd += " -e \"CREATE DATABASE #{database}\""
+    cmd << " -e \"CREATE DATABASE #{database}\""
     puts cmd + "... [password filtered]"
-    cmd += " -p'#{password}'" unless password.nil?
+    cmd << " -p'#{password}'" unless password.nil?
+    
     system(cmd)
   end
 
