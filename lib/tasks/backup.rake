@@ -26,20 +26,30 @@ private
 
   def conn
     @s3_config ||= YAML.load_file("#{Rails.root}/config/amazon_s3.yml")[Rails.env]
-    @conn ||= Aws::S3.new(@s3_config['access_key_id'], @s3_config['secret_access_key'])
+    @conn ||= S3::Service.new(:access_key_id => @s3_config['access_key_id'], 
+                              :secret_access_key => @s3_config['secret_access_key'],
+                              :use_ssl => true)
   end
 
   def bucket_name
-    "#{Rails.root.to_s.split('/').last}-backup"
+    "applications-backup"
   end
 
   def backup_bucket
-    create = conn.buckets.collect{ |b| b.name }.include?(bucket_name) ? false : true
-    conn.bucket(bucket_name, create, 'private', :location => :eu)  
+    begin
+      bucket ||= conn.buckets.find(bucket_name)
+    rescue S3::Error::ResponseError
+      bucket = conn.buckets.build(bucket_name)
+      bucket.save
+    end
+    bucket
   end
 
   def send_to_s3 local_file_path
     bucket = backup_bucket
     s3_file_path = Time.now.strftime("%Y%m%d") + '/' + local_file_path.split('/').last
-    bucket.put(s3_file_path, File.open(local_file_path))
+
+    upload = bucket.objects.build(s3_file_path)
+    upload.content = File.open(local_file_path)
+    upload.save
   end
