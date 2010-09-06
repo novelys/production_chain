@@ -1,3 +1,5 @@
+require 's3'
+
 namespace :s3 do
 
   desc "Backup code, database, and scm to S3"
@@ -13,10 +15,9 @@ namespace :s3 do
     
     desc "Backup the shared folder to S3"
     task :shared do
-      cmd = " cd .. && tar czfh current/tmp/shared.tar.gz shared/"
-      system(cmd) 
-
-      shared_tmp_path = "#{Rails.root}/tmp/shared.tar.gz"
+      cmd = " cd .. && tar czfh  /tmp/shared.tar.gz shared/ --exclude=shared/log/* --exclude=shared/sphinx/*"
+      system(cmd)
+      shared_tmp_path = "/tmp/shared.tar.gz"
       send_to_s3(shared_tmp_path)
     end
   end
@@ -25,14 +26,14 @@ end
 private
 
   def conn
-    @s3_config ||= YAML.load_file("#{Rails.root}/config/amazon_s3.yml")[Rails.env]
+    @s3_config ||= YAML.load_file("#{Rails.root}/config/backup_s3.yml")[Rails.env]
     @conn ||= S3::Service.new(:access_key_id => @s3_config['access_key_id'], 
                               :secret_access_key => @s3_config['secret_access_key'],
                               :use_ssl => true)
   end
 
   def bucket_name
-    "applications-backup"
+    @s3_config['bucket_name']
   end
 
   def backup_bucket
