@@ -5,7 +5,7 @@ namespace :db do
     rake = fetch(:rake, "rake")
     rails_env = fetch(:rails_env, "production")
     file_env = ENV['FILE'] || "database"
-    run "cd #{current_release} && RAILS_ENV=#{rails_env} FILE=#{file_env} bundle exec #{rake} db:backup"
+    run "cd #{current_release} && RAILS_ENV=#{rails_env} FILE=#{file_env} #{rake} db:backup"
     get "#{current_release}/db/dump.tar.gz", "db/dump.tar.gz"
     cmd = "bundle exec rake RAILS_ENV=#{ ENV['RAILS_ENV'] || "development" } FILE=#{file_env} db:restore"
     puts cmd
