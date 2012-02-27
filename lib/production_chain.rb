@@ -1,1 +1,2 @@
-require "railtie"
+# Rake Tasks
+require 'railtie'
