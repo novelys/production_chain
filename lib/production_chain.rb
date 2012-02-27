@@ -1,1 +1,1 @@
-Dir[File.join(File.dirname(__FILE__), 'tasks/*.rake')].each { |file| require file }
+require "railtie"
