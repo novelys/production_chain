@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.email             = ["contact@novelys.com"]
   s.homepage          = "http://github.com/novelys/production_chain"
   s.summary           = "Production Chain"
-  s.description       = "Production Chain blah"
+  s.description       = "A rails plugin that incorporate various libs, recipes and tasks"
   s.rubyforge_project = s.name
  
   s.required_rubygems_version = ">= 1.3.6"
