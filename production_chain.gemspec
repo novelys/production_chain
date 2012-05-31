@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name              = "production_chain"
-  s.version           = "0.0.1"
+  s.version           = "0.0.2"
   s.platform          = Gem::Platform::RUBY
   s.authors           = ["Novelys"]
   s.email             = ["contact@novelys.com"]
