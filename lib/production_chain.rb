@@ -9,8 +9,3 @@ if defined?(Rails)
   # Rake Tasks
   require "tasks"
 end
-
-if defined?(Capistrano)
-  # Recipes
-  Dir[File.join(File.dirname(__FILE__), 'recipes/**/*.rb')].each { |file| load file }
-end
