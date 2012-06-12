@@ -12,7 +12,7 @@ Capistrano tasks are *not* automatically loaded. You have to add to your `config
 
 ```ruby
 require 'bundler/setup'
-require 'production_chain'
+require 'production_chain/capistrano'
 ```
 
 ### Known issues
