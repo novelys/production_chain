@@ -1,6 +1,9 @@
+$:.unshift File.expand_path('../lib', __FILE__)
+require 'production_chain/version'
+
 Gem::Specification.new do |s|
   s.name              = "production_chain"
-  s.version           = "0.0.3"
+  s.version           = ProductionChain::VERSION
   s.platform          = Gem::Platform::RUBY
   s.authors           = ["Novelys"]
   s.email             = ["contact@novelys.com"]
