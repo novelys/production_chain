@@ -10,7 +10,7 @@ Capistrano::Configuration.instance.load do
       get "#{current_release}/db/dump.tar.gz", "db/dump.tar.gz"
       cmd = "RAILS_ENV=#{ ENV['RAILS_ENV'] || "development" } FILE=#{file_env} #{rake} db:restore"
       puts cmd
-      system cmd
+      system(cmd) && puts('finished')
     end
   end
 
