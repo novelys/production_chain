@@ -14,7 +14,3 @@ Capistrano tasks are *not* automatically loaded. You have to add to your `config
 require 'bundler/setup'
 require 'production_chain/capistrano'
 ```
-
-### Known issues
-
-This gem assumes you have the `s3` gem installed, while not explicitly requiring either in the gemspec or in the Gemfile.
