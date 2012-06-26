@@ -15,6 +15,12 @@ require 'bundler/setup'
 require 'production_chain/capistrano'
 ```
 
-### Known issues
+### Modules available
 
-This gem assumes you have the `s3` gem installed, while not explicitly requiring either in the gemspec or in the Gemfile.
+There is currently two modules available :
+
+* `load 'recipes/sphinx'`, for Thinking Sphinx
+* `load 'recipes/unicorn`, when using unicorn as web server
+
+Look at each file in order to know if it is suitable for your use,
+what is set and what can be overridden.
