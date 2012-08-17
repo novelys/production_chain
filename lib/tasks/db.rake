@@ -87,15 +87,42 @@ private
 
   def backup_mongodb_database database, user, password, host
     cmd = "rm -rf dump/ 2>/dev/null && /usr/bin/env mongodump -h #{host} -d #{database}"
-    cmd << " && tar czfh #{archive_name} dump/"
+    if user.blank?
+      output = cmd
+    else
+      cmd << " -u #{user}"
+      if password.blank?
+        output = cmd
+      else
+        cmd << " --password"
+        output = "#{cmd} ... [password filtered]"
+        cmd << " #{password}"
+      end
+    end
 
+    [cmd, output].each do |command|
+      command << " && tar czfh #{archive_name} dump/"
+    end
+
+    puts output
     system(cmd)
   end
 
   def restore_mongodb_database database, user, password, host
     cmd = "rm -rf dump/ 2>/dev/null && tar xvzf #{archive_name}"
     cmd += " && /usr/bin/env mongorestore --drop -h #{host} -d #{database} --dir dump/*_*"
-    puts cmd
+    if user.blank?
+      puts cmd
+    else
+      cmd << " -u #{user}"
+      if password.blank?
+        puts cmd
+      else
+        cmd << " --password"
+        puts "#{cmd} ... [password filtered]"
+        cmd << " #{password}"
+      end
+    end
 
     system(cmd)
   end
