@@ -110,7 +110,7 @@ private
 
   def restore_mongodb_database database, user, password, host
     cmd = "rm -rf dump/ 2>/dev/null && tar xvzf #{archive_name}"
-    cmd += " && /usr/bin/env mongorestore --drop -h #{host} -d #{database} --dir dump/*_*"
+    cmd += " && /usr/bin/env mongorestore --drop -h #{host} -d #{database} --dir dump/*"
     if user.blank?
       puts cmd
     else
