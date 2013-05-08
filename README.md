@@ -24,4 +24,4 @@ require 'production_chain/capistrano'
 
 ### Known issues
 
-This gem assumes you have the `s3` gem installed, while not explicitly requiring either in the gemspec or in the Gemfile.
+This gem assumes you have the `s3` gem installed, while not explicitly requiring either in the gemspec or in the Gemfile. `master` has the code and the references to s3 removed, but not the published gem yet.
