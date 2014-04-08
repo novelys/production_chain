@@ -32,13 +32,19 @@ private
     type = filename == "mongoid" ? "mongodb" : config_file[Rails.env]['adapter']
     if type == "mongodb" && config_file[Rails.env]["sessions"].present?
       # mongoid 3
-      return [
-        type,
-        config_file[Rails.env]['sessions']['default']['database'],
-        config_file[Rails.env]['sessions']['default']['username'],
-        config_file[Rails.env]['sessions']['default']['password'],
-        config_file[Rails.env]['sessions']['default']['hosts'].first || "127.0.0.1"
-      ]
+      if config_file[Rails.env]['sessions']['default']['uri']
+        require 'uri'
+        uri = URI.parse config_file[Rails.env]['sessions']['default']['uri']
+
+        return [type, uri.path[1..-1], uri.user, uri.password, (uri.host || "127.0.0.1")]
+      else
+        return [
+          type,
+          config_file[Rails.env]['sessions']['default']['database'],
+          config_file[Rails.env]['sessions']['default']['username'],
+          config_file[Rails.env]['sessions']['default']['password'],
+          config_file[Rails.env]['sessions']['default']['hosts'] || "127.0.0.1"
+        ]
     else
       return [
         type,
