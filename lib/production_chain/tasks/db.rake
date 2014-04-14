@@ -45,6 +45,7 @@ private
           config_file[Rails.env]['sessions']['default']['password'],
           config_file[Rails.env]['sessions']['default']['hosts'] || "127.0.0.1"
         ]
+      end
     else
       return [
         type,
